@@ -91,7 +91,7 @@ botao_pasta.pack(pady=15)
 # RODAPÉ
 rodape = ctk.CTkLabel(
     janela,
-    text="Desenvolvido por você 😊",
+    text="Desenvolvido por Lucas Blanger",
     font=ctk.CTkFont(size=12)
 )
 rodape.pack(side="bottom", pady=15)
