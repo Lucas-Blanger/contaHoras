@@ -4,7 +4,6 @@ import PyPDF2
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 
-
 def extrairHorasPdf(caminho_pdf):
     try:
         with open(caminho_pdf, "rb") as arquivo:
@@ -12,12 +11,8 @@ def extrairHorasPdf(caminho_pdf):
             texto = ""
             for pagina in leitor.pages:
                 texto += pagina.extract_text()
-            print(f"\n===== TEXTO DE {os.path.basename(caminho_pdf)} =====")
-            print(texto)
-
             padrao = r"(\d{1,3})\s*(h|hora[s]?)"
             correspondencias = re.findall(padrao, texto.lower())
-            print(f"Encontrado: {correspondencias}")
             if correspondencias:
                 return sum(int(valor) for valor, _ in correspondencias)
             return 0
@@ -25,75 +20,74 @@ def extrairHorasPdf(caminho_pdf):
         print(f"Erro ao processar {caminho_pdf}: {e}")
         return 0
 
-
-def somarHoras(pasta):
-    total = 0
-    for nome_arquivo in os.listdir(pasta):
-        if nome_arquivo.lower().endswith(".pdf"):
-            caminho_pdf = os.path.join(pasta, nome_arquivo)
-            horas = extrairHorasPdf(caminho_pdf)
-            print(f"{nome_arquivo}: {horas} horas")
-            total += horas
-    print(f"\nTotal acumulado: {total} horas")
-    messagebox.showinfo("Resultado", f"Total acumulado: {total} horas")
-    return total
+def escreverResultado(mensagem):
+    campoResultado.configure(state="normal")
+    campoResultado.delete("1.0", "end")
+    campoResultado.insert("1.0", mensagem)
+    campoResultado.configure(state="disabled")
 
 
 def escolherArquivo():
     caminho_pdf = filedialog.askopenfilename(filetypes=[("Arquivos PDF", "*.pdf")])
     if caminho_pdf:
         horas = extrairHorasPdf(caminho_pdf)
-        messagebox.showinfo("Resultado", f"{os.path.basename(caminho_pdf)}: {horas} horas")
-
+        msg = f"{os.path.basename(caminho_pdf)}: {horas} horas"
+        escreverResultado(msg)
 
 def escolherPasta():
     pasta = filedialog.askdirectory()
     if pasta:
-        somarHoras(pasta)
+        total = 0
+        resultado = ""
+        for nome_arquivo in os.listdir(pasta):
+            if nome_arquivo.lower().endswith(".pdf"):
+                caminho_pdf = os.path.join(pasta, nome_arquivo)
+                horas = extrairHorasPdf(caminho_pdf)
+                resultado += f"{nome_arquivo}: {horas} horas\n"
+                total += horas
+        resultado += f"\nTotal acumulado: {total} horas"
+        escreverResultado(resultado)
+
+def salvarResultado():
+    conteudo = campoResultado.get("1.0", "end").strip()
+    if conteudo:
+        caminho = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Arquivo de texto", "*.txt")])
+        if caminho:
+            with open(caminho, "w", encoding="utf-8") as f:
+                f.write(conteudo)
+            messagebox.showinfo("Salvo", "Resultado exportado com sucesso!")
 
 
-# ==== CONFIGURAÇÕES DA JANELA ====
-ctk.set_appearance_mode("System")  # opções: "Light", "Dark", "System"
-ctk.set_default_color_theme("blue")  # ou "green", "dark-blue", etc.
+ctk.set_appearance_mode("System")  
+ctk.set_default_color_theme("blue")  
 
 janela = ctk.CTk()
 janela.title("Leitor de Certificados PDF")
-janela.geometry("500x350")
+janela.geometry("600x550")
 
-# TÍTULO
-titulo = ctk.CTkLabel(
-    janela,
-    text="Leitor de Certificados PDF",
-    font=ctk.CTkFont(size=20, weight="bold")
-)
-titulo.pack(pady=30)
+try:
+    janela.iconbitmap("icone.ico")
+except:
+    pass
 
-# BOTÃO: Selecionar PDF
-botao_pdf = ctk.CTkButton(
-    janela,
-    text="Selecionar um PDF",
-    command=escolherArquivo,
-    width=250,
-    height=50
-)
-botao_pdf.pack(pady=15)
+titulo = ctk.CTkLabel(janela, text="Leitor de Certificados PDF", font=ctk.CTkFont(size=22, weight="bold"))
+titulo.pack(pady=20)
 
-# BOTÃO: Selecionar Pasta
-botao_pasta = ctk.CTkButton(
-    janela,
-    text="Selecionar Pasta de PDFs",
-    command=escolherPasta,
-    width=250,
-    height=50
-)
-botao_pasta.pack(pady=15)
 
-# RODAPÉ
-rodape = ctk.CTkLabel(
-    janela,
-    text="Desenvolvido por Lucas Blanger",
-    font=ctk.CTkFont(size=12)
-)
-rodape.pack(side="bottom", pady=15)
+btn_arquivo = ctk.CTkButton(janela, text="Selecionar um PDF", command=escolherArquivo, width=300, height=45)
+btn_arquivo.pack(pady=10)
+
+btn_pasta = ctk.CTkButton(janela, text="Selecionar Pasta de PDFs", command=escolherPasta, width=300, height=45)
+btn_pasta.pack(pady=10)
+
+campoResultado = ctk.CTkTextbox(janela, height=200, width=500, state="disabled", font=("Arial", 14))
+campoResultado.pack(pady=20)
+
+btn_salvar = ctk.CTkButton(janela, text="Salvar Resultado em .txt", command=salvarResultado, width=200)
+btn_salvar.pack(pady=10)
+
+
+rodape = ctk.CTkLabel(janela, text="Desenvolvido por Lucas Blanger", font=ctk.CTkFont(size=12))
+rodape.pack(side="bottom", pady=10)
 
 janela.mainloop()
