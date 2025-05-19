@@ -66,7 +66,7 @@ janela.title("Leitor de Certificados PDF")
 janela.geometry("600x550")
 
 try:
-    janela.iconbitmap("icone.ico")
+    janela.iconbitmap("icon.ico")
 except:
     pass
 
