@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Leitor de Certificados PDF</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <link
+      rel="icon"
+      href="{{ url_for('static', filename='favicon.ico') }}"
+      type="image/x-icon"
+    />
+  </head>
+  <body>
+    <h1>📄 Leitor de Certificados PDF</h1>
+    <form method="POST" enctype="multipart/form-data">
+      <label>Selecione arquivos PDF:</label><br /><br />
+      <input type="file" name="pdfs" multiple accept=".pdf" /><br /><br />
+      <input type="submit" value="Enviar e Calcular" />
+    </form>
+
+    {% if resultados %}
+    <div class="resultado">
+      <h2>Resultados:</h2>
+      <ul>
+        {% for nome, horas in resultados %}
+        <li><strong>{{ nome }}</strong>: {{ horas }} horas</li>
+        {% endfor %}
+      </ul>
+      <h3>Total acumulado: {{ total }} horas</h3>
+    </div>
+    {% endif %}
+  </body>
+</html>
